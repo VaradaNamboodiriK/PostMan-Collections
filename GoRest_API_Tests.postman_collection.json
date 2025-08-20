@@ -1,0 +1,157 @@
+{
+	"info": {
+		"_postman_id": "fdc7c6ea-3725-47b0-b9ba-0cf6afd860fd",
+		"name": "gorest API Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21380280"
+	},
+	"item": [
+		{
+			"name": "Create a new user",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Generate a unique email address for each run\r",
+							"const subEmail = Math.random().toString(36).substring(2, 10);\r",
+							"pm.environment.set(\"generatedEmail\", `testuser_${subEmail}@mail.com`);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test Scenario 1: Verify id returned is in numerical format\r",
+							"pm.test(\"Status code is 201 Created\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"const responseJson = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Response has 'id' field\", function () {\r",
+							"    pm.expect(responseJson).to.have.property('id');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"'id' is numerical format\", function () {\r",
+							"    pm.expect(responseJson.id).to.be.a('number');\r",
+							"});\r",
+							"\r",
+							"//Save the created user ID for further requests\r",
+							"pm.environment.set(\"createdUserId\", responseJson.id);\r",
+							"console.log(\"Created User ID: \" + responseJson.id);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Var Test User 2\",\r\n    \"gender\": \"female\",\r\n    \"email\": \"{{generatedEmail}}\",\r\n    \"status\": \"inactive\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://gorest.co.in/public/v2/users",
+					"protocol": "https",
+					"host": [
+						"gorest",
+						"co",
+						"in"
+					],
+					"path": [
+						"public",
+						"v2",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Status of new entry",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Scenario 2 - Verify status of first entry is eithe active or inactive\r",
+							"\r",
+							"pm.test(\"Status code is 200 OK\",function()\r",
+							"{\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const respJson = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Response array is not empty\", function()\r",
+							"{\r",
+							"    pm.expect(respJson).to.be.an('array').and.to.have.lengthOf.least(1);\r",
+							"});\r",
+							"\r",
+							"const firstEntryStatus = respJson[0].status;\r",
+							"\r",
+							"pm.test(\"First entry is active or inactive\",function()\r",
+							"{\r",
+							"    pm.expect(firstEntryStatus).to.be.oneOf([\"active\",\"inactive\"]);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://gorest.co.in/public/v2/users",
+					"protocol": "https",
+					"host": [
+						"gorest",
+						"co",
+						"in"
+					],
+					"path": [
+						"public",
+						"v2",
+						"users"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
